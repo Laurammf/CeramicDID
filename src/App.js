@@ -15,11 +15,11 @@ import { getLegacy3BoxProfileAsBasicProfile } from '@self.id/3box-legacy'
 
 
 
-const endpoint = "https://localhost:7007"
+// const endpoint = "https://localhost:7007"
 // https://gateway-clay.ceramic.network
 // const endpoint = "https://www.google.com.br/"
 // const endpoint = "https://gateway.ceramic.network"
-// const endpoint = "https://gateway-clay.ceramic.network"
+const endpoint = "https://gateway-clay.ceramic.network"
 // const endpoint = "https://ceramic-clay.3boxlabs.com"
 // const endpoint = "https://beta.3box.io/address-server/" 
 
@@ -35,15 +35,19 @@ function App() {
   // connect with users ethereum wallet address 
   // return array of addresses. assumption we will use first address
   async function connect() {
-    console.log(" ")
-    console.log("function connect called")
+    // console.log(" ")
+    // console.log("function connect called")
+
+
     const addresses = await window.ethereum.request({
       method: 'eth_requestAccounts'
     })
-    console.log("type of addresses " , typeof addresses);
-    console.log("connect addresses" , addresses)
-    console.log("connect addresses[0]" , addresses)
-    console.log("connect before return")
+
+    // console.log("type of addresses " , typeof addresses);
+    // console.log("connect addresses" , addresses)
+    // console.log("connect addresses[0]" , addresses)
+    // console.log("connect before return")
+
     return addresses
   }
 
@@ -52,19 +56,18 @@ function App() {
   }
 
   async function readProfile() {
-    console.log(" ")
-    console.log("read Profile begin")
+    // console.log(" ")
+    // console.log("read Profile begin")
+
     const [address] = await connect()
     const ceramic = new CeramicClient(endpoint)
-    console.log("readProf ceramic " , ceramic)
+
+    // console.log("readProf ceramic " , ceramic)
+
     const idx = new IDX({ ceramic })
-    console.log("readProf idx " , idx)
-    // try {
-    //   const data = await idx.get(
-    //     'basicProfile',
-    //     `${address}@eip155:1`    //@eip155:1 is the ethereum address. @polkadot @cosmos @fil
-    //                               //eip155:1
-    //   )
+
+    // console.log("readProf idx " , idx)
+ 
 
       
         try {
@@ -77,54 +80,56 @@ function App() {
   )
 
 
-      console.log('data: ', data)
+      // console.log('data: ', data)
+
       if (data.name) setName(data.name)
       if (data.avatar) setImage(data.avatar)
     } catch (error) {
+
       console.log('error: ', error)
       console.log("error catched")
       setLoaded(true)
     }
   }
 async function updateProfile(){
-  console.log(' ')
-  console.log('update profile function called')
+  // console.log(' ')
+  // console.log('update profile function called')
 
-  console.log(' ')
-  console.log('const [address] = await connect() : ' )
+  // console.log(' ')
+  // console.log('const [address] = await connect() : ' )
   const [address] = await connect() // await connection
   console.log('address ' , address)
   
-  console.log(' ')
-  console.log('const ceramic = new CeramicClient(endpoint) ' )
+  // console.log(' ')
+  // console.log('const ceramic = new CeramicClient(endpoint) ' )
   const ceramic = new CeramicClient(endpoint) //create ceramic instance
   
-  console.log("")
-  console.log("ceramic " , ceramic)
-  console.log("ceramic type of " , typeof ceramic)
+  // console.log("")
+  // console.log("ceramic " , ceramic)
+  // console.log("ceramic type of " , typeof ceramic)
 
 
-  console.log(' ')
-  console.log(' const threeIdConnect = new ThreeIdConnect()')
+  // console.log(' ')
+  // console.log(' const threeIdConnect = new ThreeIdConnect()')
   const threeIdConnect = new ThreeIdConnect() //create 3id instance
   // const provider = new EthereumAuthProvider(window.ethereum, address) // hier I have already verified connection with wallet
   
-  console.log(' ')
-  console.log(' const provider = new EthereumAuthProvider(window.ethereum, address[0])')
+  // console.log(' ')
+  // console.log(' const provider = new EthereumAuthProvider(window.ethereum, address[0])')
   const provider = new EthereumAuthProvider(window.ethereum, address[0])
 
-  console.log(' ')
-  console.log('provider ', provider)
+  // console.log(' ')
+  // console.log('provider ', provider)
   // wait connection with 3id
 
-  console.log(' ')
-  console.log(' await threeIdConnect.connect(provider) ')   
+  // console.log(' ')
+  // console.log(' await threeIdConnect.connect(provider) ')   
 
   await threeIdConnect.connect(provider)
 
   // interact DID. store variable DID: either create DID or get a reference based on users address
-  console.log(' ')
-  console.log(' const did = new DID({  ... ')
+  // console.log(' ')
+  // console.log(' const did = new DID({  ... ')
   const did = new DID({       // problem here
     provider: threeIdConnect.getDidProvider(), 
     resolver: {
@@ -132,30 +137,30 @@ async function updateProfile(){
       ...getKeyResolver(),
     },
   })
-  console.log(' ')
-  console.log("ceramic.setDID(did)")
+  // console.log(' ')
+  // console.log("ceramic.setDID(did)")
   // create the DID 
   ceramic.setDID(did)
 
-  console.log(' ')
-  console.log('after set DID')
+  // console.log(' ')
+  // console.log('after set DID')
 
   // authenticate user:
-  console.log(' ')
-  console.log("await ceramic.did.authenticate())") 
+  // console.log(' ')
+  // console.log("await ceramic.did.authenticate())") 
   // await ceramic.did.authenticate()         
   await ceramic.did.authenticate()              // PROBLEM HERE
-  console.log('after ceramic.did.authenticate')
+  // console.log('after ceramic.did.authenticate')
 
   // create data schema and pass it to ceramic 
-  console.log(' ')
-  console.log('const idx = new IDX({ceramic}) ')
+  // console.log(' ')
+  // console.log('const idx = new IDX({ceramic}) ')
   const idx = new IDX({ceramic})
   console.log('idx ' , idx)
 
   //pass the newly received data into the data schema called ix
-  console.log(' ')
-  console.log(' ]await idx.set(basicProfile, { ')
+  // console.log(' ')
+  // console.log(' ]await idx.set(basicProfile, { ')
   await idx.set('basicProfile', {
     name, 
     avatar:img
