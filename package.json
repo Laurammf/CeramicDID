@@ -8,8 +8,8 @@
     "@ceramicnetwork/3id-did-resolver": "^1.2.7",
     "@ceramicnetwork/http-client": "^1.0.7",
     "@ceramicstudio/idx": "^0.12.1",
-    "@composedb/cli": "^0.2.0",
-    "@composedb/client": "^0.4.4",
+    "@composedb/cli": "^0.3.0",
+    "@composedb/client": "^0.3.0",
     "@didtools/pkh-ethereum": "^0.1.0",
     "@self.id/3box-legacy": "^0.3.0",
     "@self.id/web": "^0.5.0",
@@ -50,5 +50,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@composedb/devtools": "^0.3.0",
+    "@composedb/devtools-node": "^0.3.0"
+  },
+  "browser": {
+    "fs": false
   }
 }

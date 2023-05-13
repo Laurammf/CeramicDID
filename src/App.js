@@ -2,32 +2,30 @@ import './App.css';
 import { useState } from 'react'
 
 import CeramicClient from '@ceramicnetwork/http-client'
-import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
-import { getResolver as getKeyResolver } from 'key-did-resolver'
-// import { EthereumWebAuth, getAccountId } from '@didtools/pkh-ethereum'
-import { EthereumAuthProvider, SelfID } from '@self.id/web'
-import { ethers } from 'ethers'
+
 
 import { DIDSession } from 'did-session'
-import { EthereumWebAuth, EthereumNodeAuth, getAccountId } from '@didtools/pkh-ethereum'
+import { EthereumNodeAuth, getAccountId } from '@didtools/pkh-ethereum'
 import { ComposeClient }from '@composedb/client'
-
-// import { EthereumAuthProvider, ThreeIdConnect } from '@3id/connect'
+import { readEncodedComposite } from '@composedb/devtools-node'
 import { DID } from 'dids'
+import { Ed25519Provider } from 'key-did-provider-ed25519'
+import { getResolver } from 'key-did-resolver'
+import { fromString } from 'uint8arrays/from-string'
 import { IDX } from '@ceramicstudio/idx'
 import { img } from './images/img'
-import { web3Modal } from 'web3modal'
-import { getLegacy3BoxProfileAsBasicProfile } from '@self.id/3box-legacy'
+import { writeEncodedComposite } from '@composedb/devtools-node'
+import { Composite } from '@composedb/devtools'
+import * as fs from 'fs'
 
+// var fs = require('fs');
 
-
-
-const endpoint = "https://localhost:7007"
+const endpoint = "http://localhost:7007"
 // https://gateway-clay.ceramic.network
 // const endpoint = "https://www.google.com.br/"
 // const endpoint = "https://gateway.ceramic.network"
 // const endpoint = "https://gateway-clay.ceramic.network"
-// const endpoint = "https://ceramic-clay.3boxlabs.com"
+ //const endpoint = "https://ceramic-clay.3boxlabs.com"
 // const endpoint = "https://beta.3box.io/address-server/" 
 
 
@@ -39,31 +37,13 @@ function App() {
   const [loaded, setLoaded] = useState(false)
 
 
-  // connect with users ethereum wallet address 
-  // return array of addresses. assumption we will use first address
-  async function connect() {
-    // console.log(" ")
-    // console.log("function connect called")
 
-// sessions
-    // const addresses = await window.ethereum.request({
-    //   method: 'eth_requestAccounts'
-    // })
+  async function connect() {
+
     const addresses = await window.ethereum.request({
       method: 'eth_requestAccounts',
     })
-    
-    // const addresses = await ethProvider.request({ method: 'eth_requestAccounts' })
-
-    // const self = await SelfID.authenticate({
-    //   authProvider: ethProvider,
-    //   ceramic: 'local',
-    //   connectNetwork: 'testnet-clay',
-    // })
-    // console.log("type of addresses " , typeof addresses);
-    // console.log("connect addresses" , addresses)
-    // console.log("connect addresses[0]" , addresses)
-    // console.log("connect before return")
+   
 
     return addresses
   }
@@ -71,20 +51,14 @@ function App() {
 
 
   async function readProfile() {
-
     const [address] = await connect()
-
     const ceramic = new CeramicClient(endpoint)
+
+
     const idx = new IDX({ ceramic })
-
-    // console.log("readProf idx " , idx)
- 
-
-      
         try {
           const data = await idx.get(
-            'basicProfile',
-          // `${address}@eip155:1`
+           'basicProfile',
            `eip155:1:${address}`    
                               
   )
@@ -101,107 +75,58 @@ function App() {
 async function updateProfile(){
   console.log(' ')
   console.log('update profile function called')
-
-  console.log(' ')
-  console.log('const ceramic = new CeramicClient(endpoint) ' )
   const ceramic = new CeramicClient(endpoint) //create ceramic instance
+
   
-  
-  const [address] = await connect() // await connection
-  console.log(' ')
-  console.log('address: ' , address)
+  const [address] = await connect() // await connection  
+
  
-  // console.log('const ethProvider = await web3Modal.connect()')
-  // const ethProvider = await web3Modal.connect() 
-  // const ethProvider = new EthereumWebAuth.connect()
-  // const ethProvider = window.stargazer.getProvider("ethereum");
-
-
-  // console.log(' ')
-  // console.log('ethprovider')
-  // const overrides = {
-  //   ethUrl: 'https://eth-rpc.gateway.pokt.network.',
-  // }
-  // const ethUrl = overrides.ethUrl || `https://eth-rpc.gateway.pokt.network.` // Use Ganache localhost if overrides undefined
-  // const ethProvider = new ethers.providers.JsonRpcProvider(ethUrl)
-
-
-  console.log(' ')
-  console.log('ethprovider')
-  const overrides = {
-    ethUrl: 'https://cloudflare-eth.com',
-  }
-  const ethUrl = overrides.ethUrl || `https://cloudflare-eth.com` // Use Ganache localhost if overrides undefined
-  const ethProvider = new ethers.providers.JsonRpcProvider(ethUrl)
-
-  console.log(' ')
-  console.log('ethProvider: ' , ethProvider)
-  console.log('typeOf ethprovider ', typeof ethProvider)
-  // "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
-  // https://cloudflare-eth.com
-
-  //  
-  // console.log("")
-  // console.log("ceramic " , ceramic)
-  // console.log("ceramic type of " , typeof ceramic)
-
-
-  // console.log(' ')
-  // console.log(' const threeIdConnect = new ThreeIdConnect()')
-  // const threeIdConnect = new ThreeIdConnect() //create 3id instance
-  // const ethProvider = new EthereumAuthProvider(window.ethereum, address) // hier I have already verified connection with wallet
-  console.log(' ')
-  console.log('const accountId = await getAccountId(ethProvider, address[0])')
-  // const accountId = await getAccountId(ethProvider, address)
   const accountId = await getAccountId( window.ethereum, address)
 
   console.log(' ')
   console.log('const authMethod = await EthereumWebAuth.getAuthMethod(ethProvider, accountId)')
-  // const authMethod = await EthereumWebAuth.getAuthMethod(ethProvider, accountId)
-  // const authMethod = await EthereumWebAuth.getAuthMethod( window.ethereum, accountId)
-  const authMethod = await EthereumNodeAuth.getAuthMethod(window.ethereumm, accountId) //stopped
-  // window.ethereum
-
-  // console.log(' ')
-  // console.log('compose client')
-  // const session = await DIDSession.authorize(authMethod, { resources: []})
-  // const session = await DIDSession.authorize(authMethod, { resources: [...]})
+  const authMethod = await EthereumNodeAuth.getAuthMethod(window.ethereumm, accountId) 
   
-  // const compose = new ComposeClient()
-  const client = new ComposeClient({ceramic})
-  const resources = client.resources
+
+  console.log('const composite:')
+
+  const composite = await Composite.fromModels({
+    ceramic,
+    models: ['kjzl6hvfrbw6c7keo17n66rxyo21nqqaa9lh491jz16od43nokz7ksfcvzi6bwc'],
+  })
+  console.log('write encoded composite composite:')
+
+//  await writeEncodedComposite(composite, 'my-composite.json')
+  console.log("test type"+typeof(composite))
+  
+  const resources = composite.resources
 
 
-  console.log(' ')
-  console.log('await DIDSession.authorize(authMethod, ')
   const session = await DIDSession.authorize(authMethod, {resources})
 
+  const did = new DID({
+    resolver: getResolver(),
+    provider: new Ed25519Provider(), // here inside parenthesis private key
+  })
+  await did.authenticate()
+
   console.log(' ')
-  console.log('ceramic set DID')
+  console.log('ceramic.setDID')
   ceramic.setDID(session.did)
 
+
+  console.log("end of the code")
+
+
+  //++++++++++++OLD VERSION WITH IDX - please ignore+++++++++++++
+  // const client = new ComposeClient({ceramic})
+  // const resources = client.resources
+  // console.log('await DIDSession.authorize(authMethod, ')
+  // const session = await DIDSession.authorize(authMethod, {resources})
   // ceramic.did = session.did   
   // const session = await DIDSession.authorize(authMethod, { resources: [...]})
-
-
-
-  // console.log(' ')
-  // console.log(' const provider = new EthereumAuthProvider(window.ethereum, address[0])')
   // const provider = new EthereumAuthProvider(window.ethereum, address[0])
-
-  // console.log(' ')
-  // console.log('provider ', provider)
-  // wait connection with 3id
-
-  // console.log(' ')
-  // console.log(' await threeIdConnect.connect(provider) ')   
-
   // await threeIdConnect.connect(provider)
-
-  // interact DID. store variable DID: either create DID or get a reference based on users address
-  // console.log(' ')
-  // console.log(' const did = new DID({  ... ')
-
   // const did = new DID({       // problem here
   //   // provider: session.getDidProvider(), 
   //   resolver: {
@@ -209,44 +134,22 @@ async function updateProfile(){
   //     ...getKeyResolver(),
   //   },
   // })
-
-  // console.log(' ')
-  // console.log("ceramic.setDID(did)")
   // create the DID 
   // ceramic.setDID(did)
-
-
-  // console.log(' ')
-  // console.log('after set DID')
-
-  // authenticate user:
-  // console.log(' ')
-  // console.log("await ceramic.did.authenticate())") 
-  // await ceramic.did.authenticate()         
-  console.log(' ')
-  console.log('caramic.did.authentivate')
-  await ceramic.did.authenticate()              // PROBLEM HERE
-  // console.log('after ceramic.did.authenticate')
-
+  // authenticate user:   
+  // await ceramic.did.authenticate()              // PROBLEM HERE
   // create data schema and pass it to ceramic 
-  // console.log(' ')
-  // console.log('const idx = new IDX({ceramic}) ')
-  console.log(' ')
-  console.log('IDX')
-  const idx = new IDX({ceramic})
-  console.log('idx ' , idx)
+  // const idx = new IDX({ceramic})
+  // console.log('idx ' , idx)
 
   //pass the newly received data into the data schema called ix
-  // console.log(' ')
-  // console.log(' ]await idx.set(basicProfile, { ')
-  console.log(' ')
-  console.log('idx.set')
-  await idx.set('basicProfile', {
-    name, 
-    avatar:img
+
+  // console.log('idx.set')
+  // await idx.set('basicProfile', {
+  //   name, 
+  //   avatar:img
     
-  })
-  console.log("Profile updated!")
+  // })
 
 }
 
